@@ -3,6 +3,9 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch_geometric.nn import EdgeConv, GATConv, knn_graph
 
+"""
+Originaly this file was created to do GAT + Tnet, then i used to perform other experiments here.
+"""
 def build_mlp(in_dim, hidden_dim, out_dim, dropout=0.2):
     return nn.Sequential(
         nn.Linear(in_dim, hidden_dim),
@@ -63,17 +66,14 @@ class GATTNetConvHybrid(nn.Module):
             nn=ResidualMLP(in_dim=in_channels * 2, hidden_dim=hidden_channels, out_dim=hidden_channels, dropout=dropout),
             aggr='sum'
         )
-        # Segunda capa EdgeConv con MLP residual.
-        # La entrada es la salida de la primera capa, por lo que la dimensión es hidden_channels * 2.
+        # Segunda capa EdgeConv con residualmlp
+    
         self.edgeconv2 = EdgeConv(
             nn=ResidualMLP(in_dim=hidden_channels * 2, hidden_dim=hidden_channels, out_dim=hidden_channels, dropout=dropout),
             aggr='mean'
         )
 
-        # concatenamos las salidas de ambas capas, doblando la dimensión
-        # Las siguientes dos capas de GAT refinan la representación.
         self.gat1 = GATConv(2 * hidden_channels, hidden_channels, heads=heads, concat=True)
-        # La salida de gat1 tiene dimensión hidden_channels * heads.
         self.gat2 = GATConv(hidden_channels * heads, hidden_channels, heads=heads, concat=False)
 
         # Capa de clasificación
@@ -82,7 +82,7 @@ class GATTNetConvHybrid(nn.Module):
     def forward(self, x, edge_index, batch=None):
         # Si se usa grafo dinámico, se recalcula el knn en cada forward.
         if self.dynamic_graph:
-            # Se asume que x es un tensor; si fuera un objeto Data, extraer x = data.x.
+    
             x_tensor = x if isinstance(x, torch.Tensor) else x.x
             edge_index = knn_graph(x_tensor, k=self.k, batch=batch, loop=False)
 
@@ -90,7 +90,7 @@ class GATTNetConvHybrid(nn.Module):
         x1 = self.edgeconv1(x, edge_index)
         x1 = F.leaky_relu(x1)
 
-        # Segunda capa EdgeConv (residualMLP ), aplicada sobre la salida de la primera.
+        # Segunda capa EdgeConv 
         x2 = self.edgeconv2(x1, edge_index)
         x2 = F.leaky_relu(x2)
 

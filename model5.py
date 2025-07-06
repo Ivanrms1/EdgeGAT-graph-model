@@ -57,16 +57,4 @@ class SimpleGCN(nn.Module):
         
         # FC final
         x = self.fc(x)
-        
-        # Aquí tienes un dilema:
-        # Si usas CrossEntropyLoss, conviene devolver los logits sin softmax.
-        # Si usas NLLLoss, devuelve log_softmax.
-        # Además, ¡ojo! La línea actual tiene un error: retorna "F.log_softmax(x, dim=1), y"
-        # y "y" no está definido. ¿Querías devolver solo los logits?
-        
-        # Posibles soluciones:
-        # Opción 1: Para CrossEntropyLoss (que espera logits sin softmax)
-        # return x
-        
-        # Opción 2: Para NLLLoss (que espera log-probabilidades)
         return F.log_softmax(x, dim=1)

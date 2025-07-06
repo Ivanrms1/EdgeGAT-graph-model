@@ -1,18 +1,17 @@
-#!/usr/bin/env python3
+
 """
 augment_ply_color.py  –  Data-augmentation de nubes .ply con etiquetas por color.
 
-Salida: 4 copias por nube (jitter, rot, trans, scale) en TXT o PLY.
+ 4 copias por nube (jitter, rot, trans, scale) en TXT o PLY.
 
-USO EJEMPLO
+Example
 -----------
 python augment_ply_color.py data_ply data_aug \
         --out_fmt txt --jitter_sigma 0.02 --rot_axis xyz --seed 42
 """
 
 import os, argparse, random, math, numpy as np
-import open3d as o3d               # pip install open3d
-
+import open3d as o3d             
 # ------------------------------------------------------------------------
 # Configuración y argumentos
 # ------------------------------------------------------------------------
@@ -41,16 +40,16 @@ def get_args():
     return p.parse_args()
 
 # ------------------------------------------------------------------------
-#  Colo-label helpers
+#  Colo-label 
 # ------------------------------------------------------------------------
 
-# Colores ‘puros’ (0-255) → etiqueta
+# Colors only (0-255) → etiqueta
 COLOR_TO_LBL = {
     (  0,   0, 255): 0,   # Azul
     (255,   0,   0): 1,   # Rojo
     (  0, 255,   0): 2    # Verde
 }
-# Etiqueta → color (para volver a PLY)
+# Etiqueta → color 
 LBL_TO_COLOR = {v: k for k, v in COLOR_TO_LBL.items()}
 
 def color_to_label(rgb, atol=50):
@@ -76,7 +75,7 @@ def colors_from_labels(labels):
     return out
 
 # ------------------------------------------------------------------------
-#  Augmentations (xyz only)
+#  Augmentations for xyz features only 
 # ------------------------------------------------------------------------
 
 def jitter(xyz, sigma, rng):            return xyz + rng.normal(0, sigma, xyz.shape)
@@ -99,10 +98,6 @@ def rot_mat(rng, axis="z", max_deg=180):
 def rotate(xyz, R):                     return xyz @ R.T
 def translate(xyz, max_shift, rng):     return xyz + rng.uniform(-max_shift, max_shift, 3)
 def scale(xyz, smin, smax, rng):        return xyz * rng.uniform(smin, smax)
-
-# ------------------------------------------------------------------------
-#  IO helpers
-# ------------------------------------------------------------------------
 
 def read_ply_xyz_label(path):
     pc = o3d.io.read_point_cloud(path)

@@ -1,5 +1,3 @@
-## hybrid_pt_model.py
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -8,7 +6,7 @@ from torch_geometric.nn import knn_graph
 
 class HybridEdgeGATPointTransformer(nn.Module):
     """
-    Híbrido: EdgeConv → GAT → PointTransformerConv → Classifier
+   EdgeConv → GAT → PointTransformerConv → Classifier
     """
     def __init__(self,
                  in_channels,       # dim. de entrada 

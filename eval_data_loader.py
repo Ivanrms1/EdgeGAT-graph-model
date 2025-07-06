@@ -2,7 +2,7 @@ import numpy as np
 import torch
 from torch_geometric.data import Data
 from torch_geometric.nn import knn_graph, radius_graph
-from feature_extractor import compute_pca_features  # Asegúrate de que esté correctamente importada
+from feature_extractor import compute_pca_features 
 from torch_geometric.nn.pool import fps  # Importamos FPS para el downsampling
 
 def get_edge_index(x, batch=None, graph_type="fixed", k=16, radius=0.15):
@@ -19,10 +19,6 @@ def get_edge_index(x, batch=None, graph_type="fixed", k=16, radius=0.15):
 def load_txt_as_data_eval(file_path, k=16, features="ALL", graph_type="fixed", radius=0.15, max_points=None):
     """
     Data loader de evaluación.
-    
-    Lee un archivo TXT con formato (x, y, z, [label]) por línea. Si el archivo contiene solo (x, y, z),
-    se generan etiquetas dummy. Además, si el string features (ej. "ALL") requiere características adicionales
-    (normales, curvatura, etc.), se computan usando compute_pca_features.
     
     Si max_points se especifica y el número de puntos es mayor, se realiza un downsampling
     homogéneo mediante farthest point sampling.
@@ -78,16 +74,15 @@ def load_txt_as_data_eval(file_path, k=16, features="ALL", graph_type="fixed", r
         ratio = max_points / float(x_torch.size(0))
         indices = fps(x_torch, batch=None, ratio=ratio)
         x_torch = x_torch[indices]
-        # Para construir el grafo, usamos las coordenadas originales (x, y, z)
         pts_torch = torch.from_numpy(points).float()[indices]
         y_torch = torch.from_numpy(labels).long()[indices]
     else:
         pts_torch = torch.from_numpy(points).float()
         y_torch = torch.from_numpy(labels).long()
 
-    # 7. Construir la conectividad del grafo usando las coordenadas (posiblemente downsampleadas)
+    # 7. Construir la conectividad del grafo usando las coordenadas
     edge_index = get_edge_index(pts_torch, batch=None, graph_type=graph_type, k=k, radius=radius)
 
-    # 8. Crear y retornar el objeto Data
+    # 8. Crear y retornar el objeto data
     data = Data(x=x_torch, edge_index=edge_index, y=y_torch)
     return data

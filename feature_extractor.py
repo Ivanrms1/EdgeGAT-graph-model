@@ -15,14 +15,14 @@ def compute_pca_features(points, k=16):
       - Eigenentropy (1 valor)
     
     Retorna:
-      - normals: array de forma (N, 3)
-      - curvature: array de forma (N,)
-      - linearity: array de forma (N,)
-      - planarity: array de forma (N,)
-      - scattering: array de forma (N,)
-      - omnivariance: array de forma (N,)
-      - anisotropy: array de forma (N,)
-      - eigenentropy: array de forma (N,)
+      - normals: un array de forma (N, 3), similar para los demás casos
+      - curvature
+      - linearity
+      - planarity
+      - scattering:
+      - omnivariance
+      - anisotropy
+      - eigenentropy
     """
     N = points.shape[0]
     normals = np.zeros((N, 3))
@@ -54,7 +54,7 @@ def compute_pca_features(points, k=16):
         # Curvatura
         curvature[i] = lam3 / (lam1 + lam2 + lam3 + 1e-12)
         
-        # Descriptores derivados:
+        # Otros descriptores derivados:
         linearity[i] = (lam1 - lam2) / (lam1 + 1e-12)
         planarity[i] = (lam2 - lam3) / (lam1 + 1e-12)
         scattering[i] = lam3 / (lam1 + 1e-12)

@@ -70,9 +70,9 @@ def train(ARCHITECTURE="DEFAULT", FEATURES="xyz_nc"):
     heads = 2
     lr = 0.001
     epochs = 100
-    k = 16  #ignore if graphtype is "dynamic"
+    k = 16  #ignore for dynamic graph
     batch_size = 4
-    graphtype = "fixed"  #use fixed or dynamic, if dynamic adjust radius
+    graphtype = "fixed"  #use fixed or dynamic, if dynamic adjust radius below
     radius_k=0.16
 
 
@@ -270,7 +270,7 @@ def train(ARCHITECTURE="DEFAULT", FEATURES="xyz_nc"):
         y_pred=test_preds_total,
         average='macro'
     )
-    print("\nMétricas en Test:")
+    print("\nM étricas en Test:")
     print(f" Accuracy={test_m['accuracy']:.4f}, "
           f"Precision={test_m['precision']:.4f}, "
           f"Recall={test_m['recall']:.4f}, "
@@ -297,8 +297,8 @@ def train(ARCHITECTURE="DEFAULT", FEATURES="xyz_nc"):
 
 if __name__ == "__main__":
     
-    #   python train.py EDGEGAT xyz_n --> Usa coordenadas, normales y curvatura
-    #   python train.py EDGEGAT all     --> Usa todas las features
+    #   python train.py EDGEGAT xyz_n --> Use xyz cordinates and normals
+    #   python train.py EDGEGAT all     --> Ufor all features
     if len(sys.argv) > 1:
         arch = sys.argv[1]
     else:

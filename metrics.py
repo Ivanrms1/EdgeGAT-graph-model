@@ -1,4 +1,3 @@
-# metrics.py
 import torch
 import numpy as np
 
@@ -32,7 +31,6 @@ def evaluate_metrics(outputs, labels, criterion, num_classes):
     # labels: [B, N]
     # Calcular loss
     B, N, C = outputs.shape
-    #loss = criterion(outputs.view(-1, C), labels.view(-1))
     loss = criterion(outputs.reshape(-1, C), labels.reshape(-1))
 
     preds = outputs.argmax(dim=-1)  # [B, N]

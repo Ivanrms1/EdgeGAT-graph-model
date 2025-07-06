@@ -32,7 +32,7 @@ class GCN_SAGPool(nn.Module):
         # Segundo pooling SAG
         x, edge_index, _, batch, _, _ = self.pool2(x, edge_index, batch=batch)
 
-        # Pooling global (mean) para agrupar todo el grafo 
+        # Pooling global para agrupar todo el grafo 
         x = global_mean_pool(x, batch)
 
         # Clasificación 

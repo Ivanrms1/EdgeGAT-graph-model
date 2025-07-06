@@ -13,13 +13,13 @@ class GCNUNet2(nn.Module):
                  use_bn=True, dropout=0.2):
         """
         Args:
-            in_channels (int): Dimensión de entrada (features iniciales).
-            hidden_channels (int): Dimensión intermedia del GCNUNet.
-            out_channels (int): Número de clases para la segmentación (node-level).
-            depth (int): Número de niveles de pooling/unpooling.
-            pool_ratios (float or list): fracción de nodos que retienes en cada pooling.
-            use_bn (bool): si deseas usar BatchNorm en las capas.
-            dropout (float): tasa de dropout a aplicar a las activaciones.
+            in_channels (int): initial features.
+            hidden_channels (int): middle layers
+            out_channels (int): number of classes for classification (node-level).
+            depth (int): number of pooling/unpooling.
+            pool_ratios (float or list):
+            use_bn (bool): for batchnorm between layers
+            dropout (float): adjust dropout value
         """
         super().__init__()
         
@@ -41,14 +41,6 @@ class GCNUNet2(nn.Module):
             self.bn = None
 
     def forward(self, x, edge_index, batch=None):
-        """
-        Retorna un embedding [num_nodes, out_channels] para cada nodo.
-        Llamada ideal para clasificación/segmentación de nodos:
-            out = model(batch.x, batch.edge_index, batch=batch.batch)
-            loss = criterion(out, batch.y)
-        """
-
-        
         x = self.unet(x, edge_index, batch=batch)  # [N, out_channels]
 
         if self.dropout > 0:

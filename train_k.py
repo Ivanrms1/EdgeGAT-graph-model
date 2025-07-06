@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 import os
 import sys
 import csv
@@ -15,10 +14,9 @@ from kcrossdataset import get_cv_splits
 from data_loader import load_txt_as_data
 from model import build_model          # GAT original
 from model3 import GCNUNet             # Graph U-Net (simple)
-from model_gcn_unet import GCNUNet2    # Graph U-Net modificado
+from model_gcn_unet import GCNUNet2    # Graph U-Net con batchnorm
 from model5 import SimpleGCN           # GCN simple
-from GATedgeconv import build_edgegat_model
-from Gattnetconv import GATTNetConvHybrid
+from GATedgeconv import GATEdgeConvHybrid
 from Ptencoding import PointTransformerV3
 #from GatTransformer import HybridGATTransformer
 from metricas import (
@@ -111,7 +109,7 @@ def train_kfold(
         val_loader   = DataLoader(val_data,   batch_size=batch_size, shuffle=False)
         test_loader  = DataLoader(test_data,  batch_size=batch_size, shuffle=False)
 
-        # Instanciar modelo según ARCHITECTURE
+        # Model by architecture
         arch = ARCHITECTURE.upper()
         if arch == "DEFAULT":
             print("Using GAT original")
@@ -125,7 +123,7 @@ def train_kfold(
         elif arch == "UNET2":
             print("Using GCNUNet2 (modified)")
             model = GCNUNet2(in_channels, hidden_channels, out_channels, depth=3, pool_ratios=0.5)
-        elif arch == "PT":  # o cualquier clave
+        elif arch == "PT": 
             print("Using Hybrid EdgeConv + GAT + PointTransformer")
             model = HybridEdgeGATPointTransformer(
                 in_channels=in_channels,
@@ -146,33 +144,13 @@ def train_kfold(
 
         elif arch == "EDGEGAT":
             print("Using EDGEGAT")
-            model = build_edgegat_model(
+            model = GATEdgeConvHybrid(
                 in_channels=in_channels,
                 hidden_channels=hidden_channels,
                 out_channels=out_channels,
                 heads=heads,
                 k=k,
                 dynamic_graph=False
-            )
-        elif arch == "GATNET":
-            print("Using GATNetConvHybrid")
-            model = GATTNetConvHybrid(
-                in_channels=in_channels,
-                hidden_channels=hidden_channels,
-                out_channels=out_channels,
-                heads=heads,
-                k=k,
-                dynamic_graph=False,
-                dropout=0.2
-            )
-        elif arch == "HYBRID":
-            print("Using hybrid GAT + Transformer block")
-            model = HybridGATTransformer(
-                in_dim=in_channels,
-                hid_dim=hidden_channels,
-                out_dim=out_channels,
-                heads=heads,
-                dropout=0.1
             )
         else:
             raise ValueError(f"Unsupported architecture: {ARCHITECTURE}")
@@ -186,7 +164,7 @@ def train_kfold(
         best_epoch  = 0
 
         # --- Entrenamiento por época ---
-        t0 = time.time()
+        t0 = time.time()        # Save training time
         for epoch in range(1, epochs+1):
             # Train
             model.train()
@@ -197,7 +175,6 @@ def train_kfold(
                     x, pos = batch.x, batch.x[:, :3]
                     out = model(x, pos)
                 else:
-                    # tus casos anteriores
                     try:
                         out = model(batch.x, batch.edge_index, batch.batch)
                     except TypeError:
@@ -272,7 +249,7 @@ def train_kfold(
         print(f"Fold {idx} training time: {elapsed:.1f}s — best mIoU: {best_miou:.4f}")
         fold_mious.append(best_miou)
 
-        # Guardar métricas de este fold
+        # Guardar métricas del fold
         fold_dir = os.path.join(base_cv_dir, f"fold_{idx}")
         os.makedirs(fold_dir, exist_ok=True)
         plot_metrics_over_epochs(all_metrics, save_path=os.path.join(fold_dir, "curvas.png"))
@@ -307,7 +284,7 @@ def train_kfold(
 
     print(f"Saved per-epoch summary CSV to {summary_csv}")
 
-    # (Opcional) Graficar cada métrica con barras de error
+    #Graficar cada métrica 
     for mk in metric_keys:
         means = [np.mean(summary[ep][mk]) for ep in range(1, epochs+1)]
         stds  = [np.std (summary[ep][mk]) for ep in range(1, epochs+1)]
@@ -332,8 +309,8 @@ def train_kfold(
     print(f" Training time: {mean_time:.1f}s ± {std_time:.1f}s")
 
 if __name__ == "__main__":
-    # Uso: python train_k.py <ARCH> <FEATURES> [<n_splits>]
-    arch   = sys.argv[1] if len(sys.argv) > 1 else "GATNET"
-    feats  = sys.argv[2] if len(sys.argv) > 2 else "xyz_nclpsoae"
+    # Para llamar python3 train_k.py <arch> <features> <n_fold>
+    arch   = sys.argv[1] if len(sys.argv) > 1 else "EDGEGAT"
+    feats  = sys.argv[2] if len(sys.argv) > 2 else "xyz_nclpsoae" 
     splits = int(sys.argv[3]) if len(sys.argv) > 3 else 5
     train_kfold(arch, feats, n_splits=splits)

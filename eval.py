@@ -1,26 +1,21 @@
-#!/usr/bin/env python
+
 import os
 import glob
 import numpy as np
 import torch
-
-# Import the evaluation-specific data loader
 from eval_data_loader import load_txt_as_data_eval
-# Import your model
 from Gattnetconv import GATTNetConvHybrid
 
 # ----- Configuration Variables -----
-input_folder = "eval_filestxt"         # Folder containing input TXT files
-output_folder = "PC_eval"  # Folder where evaluated TXT files will be saved
+input_folder = "eval_filestxt"         
+output_folder = "PC_eval"  
 checkpoint_path = "evalgatnet/model_best.pth"  # Path to the saved model checkpoint
 
 graph_type = "fixed"    # "fixed" for KNN, or "dynamic" for radius-based graph
 k_value = 16            # Number of neighbors for KNN
-radius_value = 0.16     # Radius for dynamic graph (if used)
+radius_value = 0.16     # Radius for dynamic graph 
 
-features_str = "ALL"    # Feature set to use (should result in the expected feature dimension, e.g., 13)
-
-# ----- End of Configuration -----
+features_str = "ALL"    # all features
 
 # Create output folder if it does not exist
 if not os.path.exists(output_folder):
@@ -28,7 +23,7 @@ if not os.path.exists(output_folder):
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-# Instantiate the model with in_channels=13 (trained with "ALL" features)
+# Instantiate the model with in_channels=13 
 model = GATTNetConvHybrid(
     in_channels=13,
     hidden_channels=64,
@@ -67,13 +62,11 @@ for file in txt_files:
         continue
     print("Data.x shape:", data.x.shape)
     data = data.to(device)
-    
-    # Run inference
     with torch.no_grad():
         out = model(data.x, data.edge_index)
         preds = out.argmax(dim=1).cpu().numpy()
     
-    # Load the original TXT file data (assume it has at least 3 columns: x, y, z)
+    # Load the original TXT file data
     original_data = np.loadtxt(file)
     if original_data.ndim == 1:
         original_data = original_data.reshape(1, -1)
@@ -81,7 +74,7 @@ for file in txt_files:
     # Append the predictions as a new column
     evaluated_data = np.hstack((original_data, preds.reshape(-1, 1)))
     
-    # Save the evaluated data to a new TXT file in the output folder
+    # Save the evaluated data to a new TXT file 
     base_name = os.path.basename(file)
     output_file = os.path.join(output_folder, base_name)
     np.savetxt(output_file, evaluated_data, fmt="%.6f")

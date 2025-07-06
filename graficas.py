@@ -5,11 +5,11 @@ from datetime import datetime
 
 def comparar_graficas(csv_files, save_dir="graficas"):
     """
-    Compara múltiples archivos CSV generando gráficas para métricas específicas.
+    Compara múltiples CSV
 
     Args:
-        csv_files (list): Lista de rutas a los archivos CSV.
-        save_dir (str): Carpeta base donde se guardarán las gráficas.
+        csv_files: carpeta de archivos csv or csv files
+        save_dir : output dir
     """
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     output_folder = os.path.join(save_dir, f"comparacion_{timestamp}")
@@ -20,9 +20,8 @@ def comparar_graficas(csv_files, save_dir="graficas"):
     dataframes = {}
     for csv_file in csv_files:
         try:
-            df = pd.read_csv(csv_file, delimiter=",")  # Cambiado a ',' como separador
+            df = pd.read_csv(csv_file, delimiter=",")  # Separados por comas
             df.columns = df.columns.str.strip()  # Eliminar espacios adicionales
-
             # Verificación de columnas
             print(f"Columnas en {csv_file}: {df.columns.tolist()}")
 

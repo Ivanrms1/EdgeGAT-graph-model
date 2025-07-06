@@ -1,4 +1,3 @@
-# data_loader.py
 import os
 import glob
 import numpy as np
@@ -13,13 +12,12 @@ from feature_extractor import compute_pca_features
 
 def adjacency_from_edge_index(edge_index, num_nodes):
     """
-    Construye la matriz de adyacencia A (sparse COO) de un grafo no dirigido
-    a partir de edge_index [2, E].
+    Construye la matriz de adyacencia A de un grafo no dirigido
+    a partir del edge_index [2, E]
     """
     row, col = edge_index.cpu().numpy()
     data = np.ones(len(row), dtype=np.float32)
     A = sp.coo_matrix((data, (row, col)), shape=(num_nodes, num_nodes))
-    # Hacemosla simétrica:
     A = A + A.T.multiply(A.T > A) - A.multiply(A.T > A)
     return A
 
@@ -38,12 +36,12 @@ def normalized_laplacian(A):
 
 def laplacian_eigen_features(L_sym, k=3):
     """
-    Calcula los primeros k+1 autovectores de L_sym y devuelve
-    las últimas k (ignorando el primero constante).
+    Calcula los primeros k+1 eigenvectores de L_sym y devuelve
+    las últimas k 
     """
     # which='SM' → los k+1 autovalores más pequeños
     vals, vecs = eigsh(L_sym, k=k+1, which='SM', tol=1e-2)
-    # vecs: (N, k+1). Quitamos la primera columna (modo trivial):
+    # (N, k+1). Quitamos la primera columna 
     return vecs[:, 1:]  # shape (N, k)
 
 def get_edge_index(x, batch=None, graph_type="fixed", k=16, radius=0.15):
@@ -71,10 +69,10 @@ def load_txt_as_data(file_path,
     """
     Lee un .txt (x,y,z,label) o solo (x,y,z) → Data(x, edge_index, y).
     Parámetros nuevos:
-      - use_laplacian (bool): si True, extrae laplacian_k autovectores del Laplaciano.
-      - laplacian_k (int): número de vectores propios a usar.
+      - use_laplacian : si True, extrae laplacian_k autovectores del Laplaciano.
+      - laplacian_k : número de vectores propios a usar.
     """
-    # 1. Cargo datos
+    # 1. Cargar datos
     raw = np.loadtxt(file_path)
     if raw.ndim == 1: raw = raw.reshape(1, -1)
     if raw.shape[1] < 4:
@@ -82,17 +80,17 @@ def load_txt_as_data(file_path,
         labels = np.zeros(points.shape[0], dtype=int)
     else:
         points = raw[:, :3]
-        labels = raw[:, 3].astype(int)   -1 #Agrerar -1 dependiendo de escala del labeling (Ao dataset, pheno4d si esta ordenado)
+        labels = raw[:, 3].astype(int)  #Agrerar -1 dependiendo de escala del labeling (Ao dataset, pheno4d si esta ordenado)
 
     N = points.shape[0]
 
-    # PCA-features opcional
+    # PCA-features 
     normals = curvature = linearity = planarity = scattering = omnivariance = anisotropy = eigenentropy = None
     if any(ch in features for ch in "nclpsoae"):
         normals, curvature, linearity, planarity, scattering, omnivariance, anisotropy, eigenentropy = \
             compute_pca_features(points, k=k)
 
-    # 3. edge_index
+    # edge_index
     pts_t = torch.from_numpy(points).float()
     edge_index = get_edge_index(pts_t, None, graph_type, k, radius)
 
@@ -114,7 +112,7 @@ def load_txt_as_data(file_path,
         lap_feats = laplacian_eigen_features(L, k=laplacian_k)  # (N, laplacian_k)
         feat_list.append(lap_feats)
 
-    # 5 NORMALIZAR CADA BLOQUE DE FEATURES
+    # 5 Feature normalization
     """Este paso muy importante, anteriormente no lo inclui y afecto enormemente dado que xyz estaban 
     influyendo mayoritariamente mientras que PCA y laplacian no"""
     norm_feat_list = []
@@ -127,7 +125,7 @@ def load_txt_as_data(file_path,
     feat_list = norm_feat_list
 
     # 6. Concatenar y crear tensores
-    x_np = np.hstack(feat_list)     # shape: (N, total_features)
+    x_np = np.hstack(feat_list)     #(N, total features)
     x_t  = torch.from_numpy(x_np).float()
     y_t  = torch.from_numpy(labels).long()
 

@@ -48,17 +48,11 @@ class SampleNet(nn.Module):
         )
     
     def forward(self, x, pos, full_edge_index):
-        # full_edge_index: maybe large radius graph
         src, dst = full_edge_index
         # compute scores for every edge
         rel_pos = pos[src] - pos[dst]
         feats = torch.cat([x[src], x[dst], rel_pos], dim=-1)
         scores = self.net(feats).squeeze(-1)      # [E]
-        
-        # for each dst (center) pick top-k src
-        # we'll assume batch-wise single graph for clarity
-        # group scores by dst and select top-k indices
-        # (in practice use torch.topk per group or a radius+topk trick)
         topk_mask = topk_per_batch(dst, scores, self.k)  # boolean mask over edges
         return full_edge_index[:, topk_mask]
 
@@ -94,7 +88,7 @@ class PointTransformerV3(MessagePassing):
     def forward(self, x, edge_index=None, batch=None):
         # extraemos posiciones de los 3 primeros channels
         pos = x[:, :3]
-        # construimos grafo denso y luego muestreamos top-k
+        # construimos grafo y luego muestreamos top-k
         full_edge_index = knn_graph(pos, k=self.k * 3, batch=batch, loop=False)
         edge_index = self.sample_net(x, pos, full_edge_index)
         return self.propagate(edge_index, x=x, pos=pos) #se propaga 
