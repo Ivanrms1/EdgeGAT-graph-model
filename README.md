@@ -34,3 +34,9 @@ The original model of my studie was with name of EdgeGAT, but i include other mo
 
 ### Standar hyperparameters
 I managed to use similar hyperparameters, like 16 k nearest neighbors, batch size of 8, learning rates of 0.0001 and 100 epochs.
+
+## EdgeGAT model
+
+This is the core architecture, similar to other models it is based on EdgeConv for aditional feature enhancing, can be viewed as a local feature extractor between nodes and neighborhods and Graph attention layers for final clasification. The complete architecture can be revised above, it consist on a 2-layers of EdgeConv after PCA feature extraction, and finishes with 2 Gat FC layers in node clasification.
+The result tables can be viewed at https://arxiv.org/html/2507.00182v1. 
+
