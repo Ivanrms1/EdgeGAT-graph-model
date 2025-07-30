@@ -1,11 +1,26 @@
-# EdgeGAT-graph-model
-This repository is for article in description.
 
-In order to use this model, the key code are train_k.py files and train.py, before tryiing this, u must need install requeriments.txt package on a venv. 
+# EdgeGAT: Hybrid Graph Attention Network for Semantic Segmentation of Plant Components in 3D Point Clouds
 
-## Dataset preparation
+This repository contains the official implementation of **EdgeGAT**, a hybrid graph neural network architecture designed for semantic segmentation of plant components (soil, stem, and leaves) from 3D point cloud data.
 
-The datasets used are obtained from Ao authors and Pheno4D, we take the individual planbt raw points, and with Meshlab, we labeled the raw pointcloud in order to represent kay component parts like soil, steam and leaves, for this we colored red for soil, blue for stem and green for leaves, after this, we sampled it into a 1024 points for plant, the dataset was converted into txt files and the labeled was added as a fourth column with values between 0 and 3. 
+---
+
+##  Overview
+
+The **EdgeGAT** model integrates **EdgeConv** layers for effective local feature extraction and **Graph Attention Networks (GAT)** for global context modeling and final point-wise classification. It leverages PCA-based feature augmentation and careful data augmentation strategies to improve generalization, especially suited for agricultural applications involving plant phenotyping.
+
+---
+
+## Requirements and Installation
+
+First, create a Python virtual environment and install dependencies:
+
+# Dataset Preparation
+Datasets used in this work are derived from:
+
+Ao et al. dataset
+
+Pheno4D dataset
 
 ### Data augmentation
 
